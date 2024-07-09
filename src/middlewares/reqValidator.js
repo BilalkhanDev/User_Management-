@@ -30,6 +30,7 @@ const verifyToken = (req, res, next) => {
           } else {
               req.decoded = decoded;
               req.userId = decoded.userId;
+              req.userRole=decoded.userRole
               next();
           }
       });

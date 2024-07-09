@@ -18,9 +18,16 @@ const allUsers=Joi.object().keys({
     limit: Joi.number().min(5).required(),
 })
 
+const updateUser=Joi.object().keys({
+    firstName: Joi.string().optional(),
+    lastName: Joi.string().allow(null, "").optional().empty(""),
+    role:Joi.number().optional().valid(2,3)
+})
+
 
 module.exports={
     userRegister,
     userSignin,
-    allUsers
+    allUsers,
+    updateUser
 }

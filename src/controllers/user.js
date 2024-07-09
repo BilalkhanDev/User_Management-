@@ -49,9 +49,13 @@ const signinCustomer = async (req, res, next) => {
       return res.status(400).json({ message: "Invalid email/password" });
     }
 
-    const token = jwt.sign({ userId: user._id }, secret_key, {
-      expiresIn: "1h",
-    });
+    const token = jwt.sign(
+      { userId: user._id, userRole: user.role },
+      secret_key,
+      {
+        expiresIn: "1h",
+      }
+    );
 
     res.status(200).json({
       id: user._id,
@@ -67,59 +71,136 @@ const signinCustomer = async (req, res, next) => {
 };
 
 const getAllUsers = async (req, res, next) => {
-    const userId = req.userId;
-    const { page, limit } = req.query;
-    
-    // Convert page and limit to integers (default to 1 if not provided)
-    const pageNumber = parseInt(page, 10) || 1;
-    const limitNumber = parseInt(limit, 10) || 10; // Default limit to 10 if not provided
+  const userId = req.userId;
+  const { page, limit } = req.query;
 
-    try {
-        // Fetch user role based on userId
-        const userRole = await UserModal.findById(userId);
+  // Convert page and limit to integers (default to 1 if not provided)
+  const pageNumber = parseInt(page, 10) || 1;
+  const limitNumber = parseInt(limit, 10) || 10; // Default limit to 10 if not provided
 
-        // Fetch all users
-        let allUsers = await UserModal.find();
+  try {
+    // Fetch user role based on userId
+    const userRole = await UserModal.findById(userId);
 
-        if (allUsers.length >= 1) {
-            let filteredUsers;
-            let totalCount;
-            let totalPages;
+    // Fetch all users
+    let allUsers = await UserModal.find();
 
-            if (userRole.role === 2) {
-                // Filter users based on role === 3
-                filteredUsers = allUsers.filter(item => item.role === 3);
+    if (allUsers.length >= 1) {
+      let filteredUsers;
+      let totalCount;
+      let totalPages;
 
-            } else {
-                // Filter users based on role !== 1
-                filteredUsers = allUsers.filter(item => item._id.toString() !== userId);
-            }
+      if (userRole.role === 2) {
+        // Filter users based on role === 3
+        filteredUsers = allUsers.filter((item) => item.role === 3);
+      } else {
+        // Filter users based on role !== 1
+        filteredUsers = allUsers.filter(
+          (item) => item._id.toString() !== userId
+        );
+      }
 
-            // Calculate total count and total pages
-            totalCount = filteredUsers.length;
-            totalPages = Math.ceil(totalCount / limitNumber);
+      // Calculate total count and total pages
+      totalCount = filteredUsers.length;
+      totalPages = Math.ceil(totalCount / limitNumber);
 
-            // Apply pagination using slice
-            filteredUsers = filteredUsers.slice((pageNumber - 1) * limitNumber, pageNumber * limitNumber);
+      // Apply pagination using slice
+      filteredUsers = filteredUsers.slice(
+        (pageNumber - 1) * limitNumber,
+        pageNumber * limitNumber
+      );
 
-            return res.status(200).json({
-                currentPage: pageNumber,
-                totalItems: totalCount,
-                totalPages: totalPages,
-                users: filteredUsers
-            });
-        } else {
-            return res.status(200).json({ message: "No Data" });
-        }
-    } catch (error) {
-        console.error("Error in retrieving users:", error);
-        return res.status(500).json({ error: "Internal server error" });
+      return res.status(200).json({
+        currentPage: pageNumber,
+        totalItems: totalCount,
+        totalPages: totalPages,
+        users: filteredUsers,
+      });
+    } else {
+      return res.status(200).json({ message: "No Data" });
     }
+  } catch (error) {
+    console.error("Error in retrieving users:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+const updateUser = async (req, res, next) => {
+  const { id } = req.params;
+  const userRole = req.userRole;
+  const { firstName, lastName, role } = req.body;
+  if (!id) {
+    return res.status(400).json({ error: "User Id must me required" });
+  }
+  try {
+    const user = await UserModal.findOne({ _id: id });
+    if (!user) {
+      return res.status(400).json({ error: "User not Found" });
+    }
+    let updatedRole = user.role;
+    if (userRole === 2) {
+      if (role === 2 || role === 3) {
+        updatedRole = role;
+      } else {
+        return res
+          .status(400)
+          .json({ error: "Managers can only update role to 2 or 3" });
+      }
+    } else {
+      updatedRole = role;
+    }
+    const updateFields = {
+      role: updatedRole,
+      firstName: firstName || user.firstName,
+      lastName: lastName || user.lastName,
+    };
+
+    // Update the user with the defined updateFields
+    await UserModal.updateOne({ _id: id }, updateFields);
+
+    const updatedUserData = await UserModal.findOne({ _id: id });
+    res.status(200).json(updatedUserData);
+  } catch (error) {
+    console.error("Error in updating user:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
 };
 
+const deleteUser = async (req, res, next) => {
+  const { id } = req.params;
+  const userRole=req.userRole
+  if (!id) {
+    return res.status(400).json({ error: "User Id must me required" });
+  }
+  try {
+  
+    const user = await UserModal.findOne({ _id: id });
+    if (!user) {
+      return res.status(400).json({ error: "User not Found" });
+    }
+    if (userRole === 2){
+        if(user.role ===1 || user.role===2){
+            return res.status(400).json({error:"Manger cannot Delete admin or manger"})
+        }
+        else{
+            await UserModal.deleteOne({_id:id})
+            res.status(200).json({message:`user ${id} removed successfully`})
+        }
+    }
+    else{
+        await UserModal.deleteOne({_id:id})
+        res.status(200).json({message:`user ${id} removed successfully`})
+    }
+
+  } catch (error) {
+    console.error("Error in updating user:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
 
 module.exports = {
   registerCustomer,
   signinCustomer,
   getAllUsers,
+  updateUser,
+  deleteUser,
 };
