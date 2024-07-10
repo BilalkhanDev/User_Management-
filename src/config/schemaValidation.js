@@ -23,11 +23,19 @@ const updateUser=Joi.object().keys({
     lastName: Joi.string().allow(null, "").optional().empty(""),
     role:Joi.number().optional().valid(2,3)
 })
+// Product Validation 
 
+const addProduct=Joi.object().keys({
+    title: Joi.string().required(),
+    desc: Joi.string().required(),
+    price:Joi.number().required(),
+})
 
 module.exports={
     userRegister,
     userSignin,
     allUsers,
-    updateUser
+    updateUser,
+    addProduct,
+
 }
