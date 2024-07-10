@@ -218,7 +218,31 @@ const deleteUser = async (req, res, next) => {
     return res.status(500).json({ error: "Internal server error" });
   }
 };
+const updateProfile=async(req,res)=>{
+  const {id}=req.params;
+  const { firstName, lastName, email,password } = req.body;
+  if (!id) {
+    return res.status(400).json({ error: "User Id must me required" });
+  }
+  try{
+    const user = await UserModal.findOne({ _id: id });
+    if (!user) {
+      return res.status(400).json({ error: "User not Found" });
+    }
+  await UserModal.updateOne({
+    firstName:user.firstName || firstName,
+    email:user.email || email,
+    lastName:user.lastName || lastName,
+    password:user.password || password,
 
+  })
+  return res.status(200).json({ user });
+  }
+  catch(error){
+    console.error("Error in updating user:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+}
 module.exports = {
   registerCustomer,
   signinCustomer,
@@ -226,4 +250,5 @@ module.exports = {
   getSingleUser,
   updateUser,
   deleteUser,
+  updateProfile
 };

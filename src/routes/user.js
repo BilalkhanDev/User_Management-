@@ -5,7 +5,8 @@ const{
      getAllUsers, 
      updateUser,
      deleteUser, 
-     getSingleUser} =require("../controllers/user");
+     getSingleUser,
+     updateProfile} =require("../controllers/user");
 const  { validator, verifyToken } =require("../middlewares/reqValidator");
 
 Router.post(
@@ -34,6 +35,12 @@ Router.patch(
     validator("updateUser", "body"),
     verifyToken,
     updateUser
+)
+Router.patch(
+    "/user/update_user_profile/:id",
+    validator("updateUserprofile", "body"),
+    verifyToken,
+    updateProfile
 )
 Router.delete(
     "/user/delete_user/:id",
