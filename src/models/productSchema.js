@@ -12,6 +12,15 @@ const productSchema = new mongoose.Schema({
         type: Number,
         trim: true
     },
+    // {
+    //     toJSON: { virtuals: true },
+    //     toObject: { virtuals: true }
+    //   });
+    //   userSchema.virtual("events", {
+    //     ref: "Event",
+    //     foreignField: "createdBy",
+    //     localField: "_id"
+    //   });
     createdBy:{
       type:mongoose.SchemaTypes.ObjectId,
       ref:"User"

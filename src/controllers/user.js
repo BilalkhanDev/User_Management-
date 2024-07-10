@@ -124,6 +124,25 @@ const getAllUsers = async (req, res, next) => {
     return res.status(500).json({ error: "Internal server error" });
   }
 };
+const getSingleUser=async(req,res)=>{
+
+  const {id}=req.params
+  try{
+    const user=await UserModal.findOne({_id:id})
+    if(!user){
+     return res.status(400).json({message:"No user avaible"})
+    }
+
+      return res.status(200).json({user})
+      
+ }
+ catch(error){
+   return res.status(400).json({
+     error:"Internal server error"
+   })
+ }
+
+}
 const updateUser = async (req, res, next) => {
   const { id } = req.params;
   const userRole = req.userRole;
@@ -168,6 +187,9 @@ const updateUser = async (req, res, next) => {
 const deleteUser = async (req, res, next) => {
   const { id } = req.params;
   const userRole=req.userRole
+  if(userRole === 3){
+    return res.status(400).json({ error: "Customer has no permissions to delete" });
+  }
   if (!id) {
     return res.status(400).json({ error: "User Id must me required" });
   }
@@ -201,6 +223,7 @@ module.exports = {
   registerCustomer,
   signinCustomer,
   getAllUsers,
+  getSingleUser,
   updateUser,
   deleteUser,
 };

@@ -4,7 +4,8 @@ const{
      signinCustomer, 
      getAllUsers, 
      updateUser,
-     deleteUser } =require("../controllers/user");
+     deleteUser, 
+     getSingleUser} =require("../controllers/user");
 const  { validator, verifyToken } =require("../middlewares/reqValidator");
 
 Router.post(
@@ -23,6 +24,11 @@ Router.get(
     verifyToken,
     getAllUsers
 )
+Router.get(
+    "/user/get_single_user/:id",
+    verifyToken,
+    getSingleUser
+)
 Router.patch(
     "/user/update_user/:id",
     validator("updateUser", "body"),
@@ -34,7 +40,7 @@ Router.delete(
     verifyToken,
     deleteUser
 )
-// 
+
 
 
 module.exports = Router;

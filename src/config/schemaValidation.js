@@ -30,6 +30,11 @@ const addProduct=Joi.object().keys({
     desc: Joi.string().required(),
     price:Joi.number().required(),
 })
+const updateProduct=Joi.object().keys({
+    title: Joi.string().optional(),
+    desc: Joi.string().optional(),
+    price:Joi.number().optional(),
+})
 
 module.exports={
     userRegister,
@@ -37,5 +42,6 @@ module.exports={
     allUsers,
     updateUser,
     addProduct,
+    updateProduct
 
 }
